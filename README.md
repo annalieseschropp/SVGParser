@@ -1,6 +1,8 @@
 # SVGParser
 Created by: Annaliese Schropp
+
 Date: January 28, 2020
+
 Version: 1.0
 
 This program creates a library file that will parse a simple SVG (Only contains group, paths, circles, rectangles) files into a valid SVG struct that includes titles (if any), description (if any) and namespace as well as lists, in hierarchical order, of the elements in the file. The final list otherAttributes contains any other features of each element such as the fill property and stores it in a list here. 
