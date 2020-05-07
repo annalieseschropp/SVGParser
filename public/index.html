@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>SVG Image Viewer</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="This allows users to create, edit and download SVG images.">
+    <meta name="keywords" content="SVG Editor">
+    <meta name="author" content="Annaliese Schropp">
+    <!-- Load jquery, bootstrap -->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" type="text/css" href="/style.css">
+    <!-- Custom CSS End -->
+</head>
+<body>
+     <div class="center">
+       <div id="welcomeMessage"></div>
+       <!--LOGIN MODAL-->
+        <div class="modal fade" id="loginModal" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Login</h5>
+              </div>
+              <div id="loginModalContent" class="modal-body">
+                <form id="loginForm">
+                  <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" class="form-control" id="usernameInput" placeholder="Username" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="dbName">Database</label>
+                    <input type="text" class="form-control" id="dbInput" placeholder="Database name" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" class="form-control" id="passwordInput" placeholder="Password" required>
+                  </div>
+                  <button type="submit" id="loginSubmit" class="btn btn-dark">Submit</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        <br>
+        <h1>SVG Image Viewer</h1>
+        <h2>File Log</h2>
+
+        <p id="NoFiles" style="text-align: center; visibility:hidden;">No Files</p>
+        <div id="tableDiv" style="overflow:auto; height:700px;"></div>
+
+        <form ref='uploadForm' id='uploadForm' style="text-align: center;">
+            <input type="file" id="real-file" hidden="hidden"/>
+            <button id="upload" type="button" class="btn btn-dark">Upload File</button> 
+        </form>
+
+        <h2>View Panel</h2>
+
+        <div class="dropdown" id="display" style="text-align: center; padding-bottom: 1%;">
+            <button class="btn btn-dark dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" >Choose... </button>
+            <ul id="chooseFileDropdown" class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            </ul>
+        </div>
+        <!-- VIEW PANEL -->
+        <table id="viewPanel" class="table">
+            <thead class="thead-dark">
+                <tr id="bigImage" style="text-align: center;"></tr>
+            </thead>
+        </table>
+        <div>
+          <table class="table">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col">Title</th>
+                    <th scope="col">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td id="title"></td>
+                    <td id="desc"></td>
+                </tr>
+            </tbody>
+          </table>
+          <div style="overflow:auto; height:450px;">
+            <table class="table" id="contentList">
+              <thead class="thead-dark">
+                  <tr>
+                      <th scope="col">Component</th>
+                      <th scope="col">Summary</th>
+                      <th scope="col">Other Attributes</th>
+                  </tr>
+              </thead>
+              <tbody id="viewPanelContent" ></tbody>
+          </table>
+          </divstyle="overflow:auto; height:700px;">
+        </div>
+        <!-- TITLE MODAL -->
+        <div class="modal fade" id="titleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLongTitle">Edit Title</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div id="titleModalContent" class="modal-body"></div>
+              </div>
+            </div>
+          </div>
+          <!-- DESC MODAL -->
+        <div class="modal fade" id="descModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLongTitle">Edit Description</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div id="descModalContent" class="modal-body"></div>
+              </div>
+            </div>
+          </div>
+          <!-- ATTRIBUTE MODAL -->
+        <div class="modal fade" id="attrModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLongTitle">Attributes</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div id="attrModalContent" class="modal-body"></div>
+              </div>
+            </div>
+          </div>
+          <!-- SCALE MODAL -->
+        <div class="modal fade" id="scaleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLongTitle">Scale Shape</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div id="scaleModalContent" class="modal-body"></div>
+              </div>
+            </div>
+          </div>
+          <!-- CREATION BUTTONS -->
+        <div style="text-align: center; padding-bottom: 2%;">
+            <button id="createSVG" type="button" class="btn btn-dark">Create SVG</button>
+            <div class="dropdown" id="addComponent" style="display:inline-block;">
+                <button id="addComponentWhenEnabled"class="btn btn-dark dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Add Component </button>
+                <div id="addCFile" class="dropdown-menu" aria-labelledby="dropdownButton">
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- HIDDEN FORMS -->
+    <div id="wrapper">
+      <div id="first">
+          <form style="visibility:hidden;" id="SVGForm">
+              <b>New SVG</b>
+              <div class="form-group">
+                  <label for="entryBox">Filename*</label>
+                  <input id="filename" type="text" maxlength="64" class="form-control" required>
+              </div>
+              <div class="form-group">
+                  <label for="entryBox">Title</label>
+                  <textarea id="SVGtitle" class="form-control rounded-0" id="exampleFormControlTextarea2" rows="3" maxlength="256"></textarea>
+              </div>
+              <div class="form-group">
+                  <label for="entryBox">Description</label>
+                  <textarea id="SVGdesc" class="form-control rounded-0" id="exampleFormControlTextarea2" rows="3" maxlength="256"></textarea>
+              </div>
+              <div class="form-group">
+                  <input value="Create"type='submit' class="btn btn-dark">
+              </div>
+          </form>
+      </div>
+      <div id="second">
+          <form id="rectForm" style="display:none;">
+              <b>Add Rectangle</b>
+              <div class="form-group">
+                  <label for="entryBox">X (X Coordinate on Canvas)*</label>
+                  <input id="x" type="number" step="0.01" min="0" class="form-control" required>
+              </div>
+              <div class="form-group">
+                  <label for="entryBox">Y (Y Coordinate on Canvas)*</label>
+                  <input id="y" type="number" step="0.01" min="0" class="form-control" required>
+              </div>
+              <div class="form-group">
+                  <label for="entryBox">Width*</label>
+                  <input id="width" type="number" step="0.01" min="0" class="form-control" required>
+              </div>
+              <div class="form-group">
+                  <label for="entryBox">Height*</label>
+                  <input id="height" type="number" step="0.01" min="0" class="form-control" required>
+              </div>
+              <div class="form-group">
+                  <label for="entryBox">Units</label>
+                  <input id="rectUnits" type="text" class="form-control">
+              </div>
+              <div class="form-group">
+                  <input value="Create Rectangle" type='submit' class="btn btn-dark">
+              </div>
+          </form>
+          <form id="circleForm" style="display:none;">
+              <b>Add Circle</b>
+              <div class="form-group">
+                  <label for="entryBox">CX (X Coordinate on Canvas)*</label>
+                  <input id="cx" type="number" step="0.01" min="0" class="form-control" required>
+              </div>
+              <div class="form-group">
+                  <label for="entryBox">CY (Y Coordinate on Canvas)*</label>
+                  <input id="cy" type="number" step="0.01" min="0" class="form-control" required>
+              </div>
+              <div class="form-group">
+                  <label for="entryBox">Radius*</label>
+                  <input id="r" type="number" step="0.01" min="0" class="form-control" required>
+              </div>
+              <div class="form-group">
+                  <label for="entryBox">Units</label>
+                  <input id="circUnits" type="text" class="form-control">
+              </div>
+              <div class="form-group" style="visibility: hidden;">
+                  <label for="entryBox">Hidden</label>
+                  <input type="text" class="form-control">
+              </div>
+              <div class="form-group">
+                  <input value="Create Circle" type='submit' class="btn btn-dark">
+              </div>
+          </form>
+      </div>
+    </div>
+    <h2>Database</h2>
+    <div id="databaseButtons"></div>
+    <!--FORM 1-->
+    <div>
+      <form style="display:none;" id="q1Form">
+        <b>Display All Files</b>
+        <br>
+        Sort By:
+        <div class="form-group">
+            <input type="radio" id="q1nameSort" name="q1sortType" value="name" required>
+            <label for="q1nameSort">Name</label>
+            <br>
+            <input type="radio" id="q1sizeSort" name="q1sortType" value="size">
+            <label for="q1sizeSort">Size</label>
+        </div>
+        <div class="form-group">
+            <input value="Show"type='submit' class="btn btn-dark">
+        </div>
+      </form>
+    </div>
+    <!--FORM 2-->
+    <div>
+      <form style="display:none;" id="q2Form">
+        <b>Display All Files Created Between Specific Dates</b>
+        <br>
+        Date Range:
+        <div class="form-group">
+          <label for="entryBox">From</label>
+          <br>
+          <input type="text" id="q2From" minlength="19" maxlength="19" placeholder="YYYY-MM-DD HH:MM:SS" required>
+          <small>Ex. 2020-04-11 01:18:24</small>
+        </div>
+        <div class="form-group">
+          <label for="entryBox">To</label>
+          <br>
+          <input type="text" id="q2To" minlength="19" maxlength="19" placeholder="YYYY-MM-DD HH:MM:SS" required>
+          <small>Ex. 2020-04-11 01:18:24</small>
+        </div>
+        Sort By:
+        <div class="form-group">
+            <input type="radio" id="q2nameSort" name="q2sortType" value="name" required>
+            <label for="q2nameSort">Name</label>
+            <br>
+            <input type="radio" id="q2sizeSort" name="q2sortType" value="size">
+            <label for="q2sizeSort">Size</label>
+            <br>
+            <input type="radio" id="createSort" name="q2sortType" value="creation">
+            <label for="createSort">Creation Date</label>
+        </div>
+        <div class="form-group">
+            <input value="Show"type='submit' class="btn btn-dark">
+        </div>
+      </form>
+    </div>
+    <!--FORM 3-->
+    <div>
+      <form style="display:none;" id="q3Form">
+        <b>Display All Files Modified Between Specific Dates</b>
+        <br>
+        Date Range:
+        <div class="form-group">
+          <label for="entryBox">From</label>
+          <br>
+          <input type="text" id="q3From" minlength="19" maxlength="19" placeholder="YYYY-MM-DD HH:MM:SS.000" required>
+          <small>Ex. 2020-04-11 01:18:24</small>
+        </div>
+        <div class="form-group">
+          <label for="entryBox">To</label>
+          <br>
+          <input type="text" id="q3To" minlength="19" maxlength="19" placeholder="YYYY-MM-DD HH:MM:SS.000" required>
+          <small>Ex. 2020-04-11 01:18:24.000</small>
+        </div>
+        Sort By:
+        <div class="form-group">
+            <input type="radio" id="q3nameSort" name="q3sortType" value="name" required>
+            <label for="q3nameSort">Name</label>
+            <br>
+            <input type="radio" id="q3sizeSort" name="q3sortType" value="size">
+            <label for="q3sizeSort">Size</label>
+            <br>
+            <input type="radio" id="modSort" name="q3sortType" value="modification">
+            <label for="modSort">Modification Date</label>
+        </div>
+        <div class="form-group">
+            <input value="Show"type='submit' class="btn btn-dark">
+        </div>
+      </form>
+    </div>
+    
+    <!--FORM 4-->
+    <div>
+      <form style="display:none;" id="q4Form">
+        <b>Display All Files With Shape Counts</b>
+        <br>
+        Shapes:
+        <div class="form-group">
+          <input type="radio" id="re" name="shapeType" value="n_rect" required>
+          <label for="re">Rectangle</label>
+          <br>
+          <input type="radio" id="c" name="shapeType" value="n_circ">
+          <label for="c">Circle</label>
+          <br>
+          <input type="radio" id="p" name="shapeType" value="n_path">
+          <label for="p">Path</label>
+          <br>
+          <input type="radio" id="g" name="shapeType" value="n_group">
+          <label for="g">Group</label>
+        </div>
+        Number Range:
+        <div class="form-group">
+          <label for="entryBox">Minimum</label>
+          <br>
+          <input type="number" min="0" id="q4minNumShape"required>
+        </div>
+        <div class="form-group">
+          <label for="entryBox">Maximum</label>
+          <br>
+          <input type="number" min="0" id="q4maxNumShape" required>
+        </div>
+        Sort By:
+        <div class="form-group">
+            <input type="radio" id="q4nameSort" name="q4sortType" value="name" required>
+            <label for="q4nameSort">Name</label>
+            <br>
+            <input type="radio" id="q4sizeSort" name="q4sortType" value="size">
+            <label for="q4sizeSort">Size</label>
+            <br>
+            <input type="radio" id="shapeSort" name="q4sortType" value="shapeCount">
+            <label for="shapeSort">Shape Count</label>
+        </div>
+        <div class="form-group">
+            <input value="Show"type='submit' class="btn btn-dark">
+        </div>
+      </form>
+    </div>
+    
+    <!--FORM 5-->
+    <div>
+      <form style="display:none;" id="q5Form">
+        <b>Display Downloaded Files</b>
+        <div class="form-group">
+          <label for="entryBox">Number to Display</label>
+          <input type="number" min="0" id="q5displayNum" required>
+        </div>
+        Sort By:
+        <div class="form-group">
+            <input type="radio" id="q5nameSort" name="q5sortType" value="name" required>
+            <label for="q5nameSort">Name</label>
+            <br>
+            <input type="radio" id="q5sizeSort" name="q5sortType" value="size">
+            <label for="q5sizeSort">Size</label>
+        </div>
+        <div class="form-group">
+            <input value="Show"type='submit' class="btn btn-dark">
+        </div>
+      </form>
+    </div>
+    
+    <!--FORM 6-->
+    <div>
+      <form style="display:none;" id="q6Form">
+        <b>Display All Changes Between Specific Date</b>
+        <br>
+        Files:
+        <div id="fileList" class="form-group"></div>
+        <div class="form-group">
+            <input value="Show"type='submit' class="btn btn-dark">
+        </div>
+      </form>
+      <form style="display:none;" id="q6FormInfo">
+        Change Type:
+        <div id="changeList" class="form-group"></div>
+        Date Range:
+        <div class="form-group">
+          <label for="entryBox">From</label>
+          <br>
+          <input type="text" id="q6From" minlength="19" maxlength="19" placeholder="YYYY-MM-DD HH:MM:SS" required>
+          <small>Ex. 2020-04-11 01:18:24</small>
+        </div>
+        <div class="form-group">
+          <label for="entryBox">To</label>
+          <br>
+          <input type="text" id="q6To" minlength="19" maxlength="19" placeholder="YYYY-MM-DD HH:MM:SS" required>
+          <small>Ex. 2020-04-11 01:18:24</small>
+        </div>
+        Sort By:
+        <div class="form-group">
+          <input type="radio" id="cfirst" name="q6sortType" value="first" required>
+          <label for="cfirst">Recent Change First</label>
+          <br>
+          <input type="radio" id="clast" name="q6sortType" value="last">
+          <label for="clast">Recent Change Last</label>
+        </div>
+        <div class="form-group">
+          <input value="Show"type='submit' class="btn btn-dark">
+        </div>
+      </form>
+    </div>
+    <div style="text-align: center;" id="dbTable"></div>
+    <!-- Leave me at the bottom of body -->
+    <script src="/index.js"></script>
+</body>
+</html>
+
+
+
+
+
+
